@@ -1,0 +1,79 @@
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Đổi màu nút đóng thành trắng khi ở trong header có nền bg-primary */
+.modal-header .btn-close {
+  filter: brightness(0) invert(1);
+}
+
+/* Responsive */
+.tab-scroll {
+  height: 50vh;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+@media (max-height: 600px) {
+  .tab-scroll {
+    max-height: 40vh;
+  }
+}
+
+@media (min-height: 900px) {
+  .tab-scroll {
+    max-height: 60vh;
+  }
+}
+
+div[data-mantine-space] {
+  display: block !important;
+  min-height: unset !important;
+}
+/* Responsive Header */
+
+.location-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 424px) {
+  .location-wrapper {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .wrap-btn-signup {
+    display: none !important;
+  }
+}
+
+/* responsive court */
+@media (min-width: 319px) {
+  .mtopCourt {
+    margin-top: 380px;
+  }
+}
+@media (min-width: 424px) {
+  .mtopCourt {
+    margin-top: 330px;
+  }
+}
+@media (min-width: 767px) {
+  .mtopCourt {
+    margin-top: 200px;
+  }
+}
+@media (min-width: 1023px) {
+  .mtopCourt {
+    margin-top: 200px;
+  }
+}
+
+@media (max-width: 424px) {
+  .tab-scroll {
+    max-height: 40vh;
+  }
+}

@@ -1,0 +1,107 @@
+[
+  {
+    "name": "Hà Nội",
+    "districts": [
+      "Ba Đình",
+      "Hoàn Kiếm",
+      "Tây Hồ",
+      "Long Biên",
+      "Cầu Giấy",
+      "Đống Đa",
+      "Hai Bà Trưng",
+      "Hoàng Mai",
+      "Thanh Xuân",
+      "Sóc Sơn",
+      "Đông Anh",
+      "Gia Lâm",
+      "Nam Từ Liêm",
+      "Thanh Trì",
+      "Bắc Từ Liêm",
+      "Mê Linh",
+      "Hà Đông",
+      "Sơn Tây",
+      "Ba Vì",
+      "Phúc Thọ",
+      "Đan Phượng",
+      "Hoài Đức",
+      "Quốc Oai",
+      "Thạch Thất",
+      "Chương Mỹ",
+      "Thanh Oai",
+      "Thường Tín",
+      "Phú Xuyên",
+      "Ứng Hòa",
+      "Mỹ Đức"
+    ]
+  },
+  {
+    "name": "Hồ Chí Minh",
+    "districts": [
+      "Quận 1",
+      "Quận 3",
+      "Quận 4",
+      "Quận 5",
+      "Quận 6",
+      "Quận 7",
+      "Quận 8",
+      "Quận 10",
+      "Quận 11",
+      "Quận 12",
+      "Tân Bình",
+      "Tân Phú",
+      "Bình Tân",
+      "Bình Thạnh",
+      "Gò Vấp",
+      "Phú Nhuận",
+      "Thủ Đức",
+      "Hóc Môn",
+      "Bình Chánh",
+      "Nhà Bè",
+      "Củ Chi",
+      "Cần Giờ"
+    ]
+  },
+  {
+    "name": "Đà Nẵng",
+    "districts": [
+      "Hải Châu",
+      "Thanh Khê",
+      "Sơn Trà",
+      "Ngũ Hành Sơn",
+      "Liên Chiểu",
+      "Cẩm Lệ",
+      "Hòa Vang",
+      "Hoàng Sa"
+    ]
+  },
+  {
+    "name": "Bình Dương",
+    "districts": [
+      "Thủ Dầu Một",
+      "Dĩ An",
+      "Thuận An",
+      "Bến Cát",
+      "Tân Uyên",
+      "Bàu Bàng",
+      "Bắc Tân Uyên",
+      "Dầu Tiếng",
+      "Phú Giáo"
+    ]
+  },
+  {
+    "name": "Đồng Nai",
+    "districts": [
+      "Biên Hòa",
+      "Long Khánh",
+      "Tân Phú",
+      "Định Quán",
+      "Thống Nhất",
+      "Cẩm Mỹ",
+      "Long Thành",
+      "Xuân Lộc",
+      "Nhơn Trạch",
+      "Trảng Bom",
+      "Vĩnh Cửu"
+    ]
+  }
+]
