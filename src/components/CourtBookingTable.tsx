@@ -28,8 +28,9 @@ export interface Booking {
 }
 
 export interface PricingSlot {
-  start_time: string;
-  end_time: string;
+  timeSlotId: number;
+  startTime: string; // đổi thành camelCase
+  endTime: string; // đổi thành camelCase
   price: number;
 }
 
@@ -37,7 +38,7 @@ export interface BookingCourt {
   id: number;
   name: string;
   bookings: Booking[];
-  prices: PricingSlot[];
+  prices: PricingSlot[]; // dùng interface mới
 }
 
 export interface FieldData {
@@ -57,26 +58,35 @@ type SelectedSlot = {
 };
 
 // Kiểm tra slot có bị đặt chưa
-const isBooked = (bookings: Booking[], slot: TimeSlot, selectedDate: Date): boolean => {
+const isBooked = (bookings: any[], slot: TimeSlot, selectedDate: Date): boolean => {
+  if (!selectedDate) return false;
+
   const selected = dayjs(selectedDate).format('YYYY-MM-DD');
+
   return bookings.some((b) => {
-    const bookingDate = dayjs(b.booking_date).format('YYYY-MM-DD');
-    return bookingDate === selected && slot.start >= b.start_time && slot.start < b.end_time;
+    const bookingDate = b.bookingDate || b.booking_date;
+    const start_time = b.startTime || b.start_time;
+    const end_time = b.endTime || b.end_time;
+
+    const isSameDate = dayjs(bookingDate).format('YYYY-MM-DD') === selected;
+
+    // Kiểm tra slot có bị chồng lên booking không
+    // slot.start >= b.start_time && slot.start < b.end_time
+    return isSameDate && slot.start >= start_time && slot.start < end_time;
   });
 };
 
 // Add props to component
 interface CourtBookingTableProps {
-  data: FieldData;
   courtGroup?: any; // Add court group info
 }
 
-export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ data, courtGroup }) => {
+export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ courtGroup }) => {
   const [selectedSlots, setSelectedSlots] = useState<SelectedSlot[]>([]);
   const [bookingData, setBookingData] = useState<any>({
     id: null,
     name: '',
-    booking_courts: [],
+    bookingCourts: [],
   });
 
   // Add state for confirmation modal
@@ -108,20 +118,16 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ data, cour
     fetchBookingData();
   }, [courtGroup.id, valueDate]);
 
-  // const { booking_courts } = bookingData;
-  const { booking_courts } = data;
+  const bookingCourts = bookingData?.bookingCourts || [];
+  // const { booking_courts } = data;
 
   const open_time = courtGroup?.openTime;
   const close_time = courtGroup?.closeTime;
-
-  console.log('open_time, close_time', open_time, close_time);
 
   const timeSlots = useMemo(
     () => generateTimeSlots(open_time, close_time),
     [open_time, close_time]
   );
-
-  console.log(timeSlots);
 
   const handleSelectSlot = (courtId: number, slot: TimeSlot) => {
     if (!valueDate) return; // nếu chưa chọn ngày
@@ -183,65 +189,83 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ data, cour
 
   const handleBookingClick = async () => {
     if (selectedSlots.length === 0 || !valueDate) {
+      alert('Vui lòng chọn khung giờ!');
       return;
     }
 
-    // Kiểm tra tất cả slot đều cùng sân
+    // 1. Kiểm tra tất cả slot phải cùng 1 sân
     const uniqueCourts = new Set(selectedSlots.map((s) => s.court_id));
     if (uniqueCourts.size > 1) {
       alert('Bạn chỉ được phép đặt nhiều khung giờ trên cùng một sân!');
       return;
     }
 
-    // Kiểm tra các slot có liền nhau không
+    // 2. Kiểm tra các khung giờ phải liền nhau
     const sortedSlots = [...selectedSlots].sort((a, b) => a.start_time.localeCompare(b.start_time));
 
     for (let i = 0; i < sortedSlots.length - 1; i++) {
-      const current = sortedSlots[i];
-      const next = sortedSlots[i + 1];
-
-      if (current.end_time !== next.start_time) {
-        alert('Các khung giờ phải liền nhau (ví dụ: 15:00-15:30, 15:30-16:00)');
+      if (sortedSlots[i].end_time !== sortedSlots[i + 1].start_time) {
+        alert('Các khung giờ phải liền kề nhau (ví dụ: 15:00–15:30, 15:30–16:00)');
         return;
       }
     }
 
-    // Group slots by court
-    const slotsByCourt = selectedSlots.reduce((acc, slot) => {
-      if (!acc[slot.court_id]) {
-        acc[slot.court_id] = [];
-      }
-      acc[slot.court_id].push({
-        startTime: slot.start_time,
-        endTime: slot.end_time,
-      });
-      return acc;
-    }, {} as Record<number, Array<{ startTime: string; endTime: string }>>);
+    // 3. Lấy thông tin cần thiết
+    const courtId = selectedSlots[0].court_id;
+    const bookingDate = dayjs(valueDate).format('YYYY-MM-DD');
+    const storedUser = localStorage.getItem('user');
+    var userId;
+    if (storedUser) {
+      userId = JSON.parse(storedUser).id;
+    }
 
-    const firstCourtId = Object.keys(slotsByCourt)[0];
-    if (!firstCourtId) return;
+    // 4. Gộp các khung giờ liền nhau thành các block (vd: 14:00–16:00 thay vì 4 slot 30 phút)
+    const mergedSlots = mergeTimeSlots(
+      sortedSlots.map((s) => ({ start_time: s.start_time, end_time: s.end_time }))
+    );
 
+    // 5. Tính tổng tiền (dùng hàm calculateTotal đã có)
+    const totalPrice = calculateTotal(selectedSlots, bookingCourts || []);
+
+    // 6. Tìm tên sân để hiển thị
+    const selectedCourt = bookingCourts?.find((c: any) => c.id === courtId);
+    const courtName = selectedCourt?.name || 'Sân không xác định';
+
+    const confirmationPayload = {
+      user_id: userId,
+      court_id: courtId,
+      booking_date: bookingDate,
+      time_slots: mergedSlots, // [{ start_time: "14:00", end_time: "16:00" }, ...]
+      total_price: totalPrice,
+      status: 'PENDING', // hoặc 'confirmed' tùy flow
+      court_name: courtName,
+      full_address: courtGroup?.address || 'Đang cập nhật', // nếu có địa chỉ
+    };
+
+    // 8. Gọi API xác nhận (nếu backend có endpoint lấy preview)
     setLoading(true);
     try {
-      console.log({
-        courtGroupId: courtGroup.id,
-        courtId: parseInt(firstCourtId),
-        date: valueDate.toISOString().split('T')[0],
-        selectedSlots: slotsByCourt[parseInt(firstCourtId)],
-      });
-      const confirmation = await getBookingConfirmation({
-        courtGroupId: courtGroup.id,
-        courtId: parseInt(firstCourtId),
-        date: valueDate.toISOString().split('T')[0],
-        selectedSlots: slotsByCourt[parseInt(firstCourtId)],
-      });
+      const confirmationPayload = {
+        user_id: userId,
+        court_id: courtId,
+        booking_date: bookingDate,
+        time_slots: mergedSlots, // [{ start_time: "14:00", end_time: "16:00" }, ...]
+        total_price: totalPrice,
+        status: 'PENDING', // hoặc 'confirmed' tùy flow
+        court_name: courtName,
+        full_address: courtGroup?.address || 'Đang cập nhật', // nếu có địa chỉ
+      };
+      await getBookingConfirmation(confirmationPayload);
 
-      setConfirmationData(confirmation);
-      setShowConfirmationModal(true);
+      // Nếu backend trả thêm thông tin (địa chỉ, tên, v.v.) thì ưu tiên dùng
+      setConfirmationData(confirmationPayload);
     } catch (err) {
-      console.error('Lỗi khi lấy thông tin xác nhận:', err);
+      console.error('Lỗi khi xác nhận đặt sân:', err);
+      // Vẫn cho phép xem preview dù không gọi được API
+      setConfirmationData(confirmationPayload);
     } finally {
       setLoading(false);
+      setShowConfirmationModal(true);
     }
   };
 
@@ -266,25 +290,31 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ data, cour
     return merged;
   };
 
-  function getPriceByTime(prices: PriceSlot[], time: string): number {
-    // Hàm chuyển "HH:mm" -> phút
+  function getPriceByTime(prices: any[], time: string): number {
     const toMinutes = (t: string) => {
+      if (!t) return 0;
       const [h, m] = t.split(':').map(Number);
-      return h * 60 + m;
+      return h * 60 + (m || 0);
     };
 
     const timeInMin = toMinutes(time);
 
     for (const p of prices) {
-      const start = toMinutes(p.start_time);
-      const end = toMinutes(p.end_time);
+      // Hỗ trợ cả start_time và startTime
+      const startTime = p.start_time || p.startTime;
+      const endTime = p.end_time || p.endTime;
+
+      if (!startTime || !endTime) continue;
+
+      const start = toMinutes(startTime);
+      const end = toMinutes(endTime);
 
       if (timeInMin >= start && timeInMin < end) {
         return p.price;
       }
     }
 
-    return 0;
+    return 0; // không tìm thấy giá
   }
 
   function calculateTotal(selectedSlots: SelectedSlot[], bookingCourts: BookingCourt[]): number {
@@ -300,7 +330,7 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ data, cour
 
     return total;
   }
-  const totalPrice = calculateTotal(selectedSlots, booking_courts);
+  const totalPrice = calculateTotal(selectedSlots, bookingCourts);
 
   return (
     <>
@@ -342,7 +372,7 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ data, cour
           </Button>
         </Group>
       </Flex>
-      <Group>
+      <Group ml={50}>
         <Group>
           <Box
             w={20}
@@ -398,7 +428,7 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ data, cour
           </Table.Thead>
 
           <Table.Tbody>
-            {booking_courts.map((court: any) => (
+            {bookingCourts.map((court: any) => (
               <Table.Tr key={court.id}>
                 <Table.Td align="center" style={{ backgroundColor: 'rgb(210, 247, 229)' }}>
                   <Text>{court.name}</Text>
@@ -528,18 +558,9 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ data, cour
               </Button>
               <Button
                 onClick={() => {
-                  // setShowConfirmationModal(true);
-                  // console.log('confirmationData', confirmationData);
-                  // console.log('selectedSlots', selectedSlots);
-                  // Navigate to payment page
-                  // navigate(`/payment`, {
-                  //   state: {
-                  //     court_group_id: confirmationData.id,
-                  //     court_id: parseInt(firstCourtId),
-                  //     bookingData: confirmationData,
-                  //     selectedSlots: selectedSlots,
-                  //   },
-                  // });
+                  navigate(`/payment`, {
+                    state: confirmationData,
+                  });
                 }}
               >
                 Tiếp tục

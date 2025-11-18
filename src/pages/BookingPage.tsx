@@ -36,8 +36,6 @@ const BookingPage: React.FC = () => {
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  console.log(selectedDate);
-
   // Lấy nhóm sân theo id
   useEffect(() => {
     const fetchCourtGroup = async () => {
@@ -63,16 +61,14 @@ const BookingPage: React.FC = () => {
           {
             id: 1,
             booking_date: '2025-11-17',
-            start_time: '16:00', // vì các khung giờ đặt liền nhau, nên chỉ cần lấy ra giờ bắt đầu và kết thúc
+            start_time: '16:00',
             end_time: '17:00',
             total_price: 50000,
           },
         ],
         prices: [
-          // phần này lấy ra các slot và giá theo id của court
-          { time_slot_id: 6, start_time: '17:00', end_time: '17:30', price: 25000 },
-          { time_slot_id: 7, start_time: '17:30', end_time: '18:00', price: 50000 },
-          { time_slot_id: 8, start_time: '18:00', end_time: '18:30', price: 100000 },
+          { time_slot_id: 6, start_time: '06:00', end_time: '17:30', price: 25000 },
+          { time_slot_id: 7, start_time: '17:30', end_time: '23:00', price: 50000 },
         ],
       },
       {
@@ -80,9 +76,8 @@ const BookingPage: React.FC = () => {
         name: 'Sân 2',
         bookings: [],
         prices: [
-          { time_slot_id: 6, start_time: '17:00', end_time: '17:30', price: 25000 },
-          { time_slot_id: 7, start_time: '17:30', end_time: '18:00', price: 50000 },
-          { time_slot_id: 8, start_time: '18:00', end_time: '18:30', price: 100000 },
+          { time_slot_id: 6, start_time: '06:00', end_time: '17:30', price: 25000 },
+          { time_slot_id: 7, start_time: '17:30', end_time: '23:00', price: 50000 },
         ],
       },
     ],
@@ -107,11 +102,11 @@ const BookingPage: React.FC = () => {
             </div>
           </>
         )}
-
-        {courtGroup && <CourtBookingTable data={mockBookingData} courtGroup={courtGroup} />}
-        {/* {mockData && <CourtBookingTable data={mockData} courtGroup={courtGroup} />} */}
-        <Divider h={20} />
-        {/* {fullAddress && (
+        <Divider />
+      </Container>
+      {courtGroup && <CourtBookingTable courtGroup={courtGroup} />}
+      <Container className="my-4">
+        {fullAddress && (
           <div className="mb-4">
             <h5 className="fw-bold">Vị trí sân</h5>
             <div className="border rounded overflow-hidden" style={{ height: '400px' }}>
@@ -128,7 +123,7 @@ const BookingPage: React.FC = () => {
               ></iframe>
             </div>
           </div>
-        )} */}
+        )}
       </Container>
       <Footer />
     </>

@@ -106,33 +106,13 @@ export interface PricingSlot {
 }
 
 export const getBookingData = async (courtGroupId: string, date: string): Promise<BookingData> => {
-  console.log('courtGroupId', courtGroupId);
-  const res = await api.get(`/court-groups/court-group/${courtGroupId}/data`, {
+  const res = await api.get(`/bookings/${courtGroupId}/data`, {
     params: { date },
   });
   return res.data.result;
 };
 
-export interface BookingConfirmationRequest {
-  courtGroupId: number;
-  courtId: number;
-  date: string;
-  selectedSlots: Array<{ startTime: string; endTime: string }>;
-}
-
-export interface BookingConfirmationResponse {
-  court_group_id: number;
-  court_group_name: string;
-  full_address: string;
-  booking_date: string;
-  court_name: string;
-  time_slots: Array<{ start_time: string; end_time: string }>;
-  total_price: number;
-}
-
-export const getBookingConfirmation = async (
-  data: BookingConfirmationRequest
-): Promise<BookingConfirmationResponse> => {
+export const getBookingConfirmation = async (data: any): Promise<any> => {
   const res = await api.post('/bookings/confirmation', data);
   return res.data.result;
 };
