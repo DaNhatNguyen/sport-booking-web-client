@@ -72,10 +72,10 @@ const SearchBar: React.FC = () => {
             <Col md={3} sm={6}>
               <Form.Select value={selectedSport} onChange={(e) => setSelectedSport(e.target.value)}>
                 <option value="">Chọn sân thể thao</option>
-                <option value="Sân cầu lông">Sân Cầu lông</option>
-                <option value="Sân bóng đá">Sân bóng đá</option>
-                <option value="Sân tennis">Sân tennis</option>
-                <option value="Sân bóng bàn">Sân bóng bàn</option>
+                <option value="Badminton">Sân cầu lông</option>
+                <option value="football">Sân bóng đá</option>
+                <option value="Tennis">Sân tennis</option>
+                <option value="Basketball">Sân bóng rổ</option>
               </Form.Select>
             </Col>
 
