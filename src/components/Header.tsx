@@ -7,7 +7,7 @@ import { getStoredUser, fetchCurrentUser, clearUser } from '../services/authServ
 import logo from '../assets/logo.png';
 import { Link } from 'react-router-dom';
 import BookingHistoryModal from './BookingHistoryModal';
-
+import userImg from '../assets/userImg.png';
 interface Province {
   name: string;
   districts: string[];
@@ -132,7 +132,7 @@ const Header: React.FC = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <img
-                    src="https://i.pravatar.cc/300"
+                    src={userImg}
                     alt="avatar"
                     width="32"
                     height="32"

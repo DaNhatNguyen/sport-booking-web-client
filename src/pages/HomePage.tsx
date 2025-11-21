@@ -12,10 +12,20 @@ const HomePage: React.FC = () => {
     <>
       <Header />
       <ImageSlider />
-      <div style={{ position: 'relative' }}>
+      <div
+        style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
+      >
         <SearchBar />
       </div>
       <div className="mtopCourt">
+        <NearbyCourts />
+      </div>
+
+      <div
+        style={{
+          marginTop: '50px',
+        }}
+      >
         <NearbyCourts />
       </div>
       <Footer />

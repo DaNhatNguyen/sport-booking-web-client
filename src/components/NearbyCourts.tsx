@@ -6,6 +6,7 @@ import { CourtGroup } from '../types/courtGroup';
 import { checkLoginAndRedirect } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import defaultCourtImage from '../assets/default-court-image.png';
 
 const NearbyCourts: React.FC = () => {
   const [courtGroups, setCourtGroups] = useState<CourtGroup[]>([]);
@@ -45,12 +46,6 @@ const NearbyCourts: React.FC = () => {
       <h4 className="fw-bold">Sân gần bạn</h4>
       <p className="text-muted">Khu vực được đề xuất gần vị trí của bạn</p>
 
-      <div className="d-flex gap-2 flex-wrap mb-4">
-        <Badge pill bg="dark" text="light">
-          Tất cả
-        </Badge>
-      </div>
-
       <div className="d-flex flex-wrap gap-4 justify-content-start">
         {courtGroups.length === 0 ? (
           <div className="text-muted fst-italic px-2">
@@ -75,7 +70,7 @@ const NearbyCourts: React.FC = () => {
               <Card className="h-100 border-0">
                 <Card.Img
                   variant="top"
-                  src={court.images?.[0] || '/default-image.png'}
+                  src={court.images?.[0] || defaultCourtImage}
                   // src={'../assets/default-image.png'}
                   style={{ height: '160px', objectFit: 'cover' }}
                 />
@@ -106,7 +101,8 @@ const NearbyCourts: React.FC = () => {
             <Tab eventKey="info" title="Thông tin">
               <div className="tab-scroll">
                 <img
-                  src={selectedCourt?.images?.[0] || '/default-image.png'}
+                  // src={selectedCourt?.images?.[0] || defaultCourtImage}
+                  src={defaultCourtImage}
                   alt="court"
                   className="img-fluid rounded mb-3"
                   style={{}}

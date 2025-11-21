@@ -38,33 +38,39 @@ const SearchBar: React.FC = () => {
     }
 
     try {
-      navigate(`/search-results?type=${selectedSport}&city=${selectedProvince}&district=${selectedDistrict}`);
+      navigate(
+        `/search-results?type=${selectedSport}&city=${selectedProvince}&district=${selectedDistrict}`
+      );
     } catch (err) {
       console.error('Lỗi khi chuyển hướng tìm kiếm:', err);
     }
   };
 
   return (
-    <div className="bg-white py-4" style={{
-      position: 'absolute',
-      top: '0',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 10,
-      width: '100%',
-      maxWidth: '1140px'
-    }}>
-      <Container className="shadow rounded px-4 py-3 bg-white">
+    <div
+      className="bg-white"
+      style={{
+        position: 'absolute',
+        top: -20,
+        zIndex: 10,
+        width: '100%',
+        maxWidth: '1140px',
+        borderRadius: 10,
+      }}
+    >
+      <Container
+        className="shadow rounded px-4 py-3 bg-white"
+        style={{
+          top: 10,
+        }}
+      >
         <h5 className="fw-bold mb-1">Đặt sân thể thao ngay</h5>
         <p className="text-muted mb-4">Tìm kiếm sân chơi thể thao, thi đấu khắp cả nước</p>
 
         <Form onSubmit={handleSearch}>
           <Row className="g-2 align-items-center">
             <Col md={3} sm={6}>
-              <Form.Select
-                value={selectedSport}
-                onChange={(e) => setSelectedSport(e.target.value)}
-              >
+              <Form.Select value={selectedSport} onChange={(e) => setSelectedSport(e.target.value)}>
                 <option value="">Chọn sân thể thao</option>
                 <option value="Sân cầu lông">Sân Cầu lông</option>
                 <option value="Sân bóng đá">Sân bóng đá</option>
@@ -95,7 +101,9 @@ const SearchBar: React.FC = () => {
               >
                 <option value="">Chọn quận/huyện</option>
                 {districts.map((d, idx) => (
-                  <option key={idx} value={d}>{d}</option>
+                  <option key={idx} value={d}>
+                    {d}
+                  </option>
                 ))}
               </Form.Select>
             </Col>
