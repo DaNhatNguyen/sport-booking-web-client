@@ -106,7 +106,7 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ courtGroup
       if (courtGroup._id && formattedDate) {
         setLoading(true);
         try {
-          const bookingData = await getBookingData(courtGroup._id, formattedDate);
+      const bookingData = await getBookingData(courtGroup._id, formattedDate);
           setBookingData(bookingData);
         } catch (err) {
           console.error('Lỗi khi load dữ liệu đặt sân:', err);
@@ -254,14 +254,19 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ courtGroup
         status: 'PENDING', // hoặc 'confirmed' tùy flow
         court_name: courtName,
         full_address: courtGroup?.address || 'Đang cập nhật', // nếu có địa chỉ
+        court_group_id: courtGroup?._id,
       };
-      await getBookingConfirmation(confirmationPayload);
 
-      // Nếu backend trả thêm thông tin (địa chỉ, tên, v.v.) thì ưu tiên dùng
-      setConfirmationData(confirmationPayload);
+      const apiResult = await getBookingConfirmation(confirmationPayload);
+
+      // Lưu booking_id từ backend để dùng cho thanh toán & đánh giá
+      setConfirmationData({
+        ...confirmationPayload,
+        booking_id: apiResult.booking_id,
+      });
     } catch (err) {
       console.error('Lỗi khi xác nhận đặt sân:', err);
-      // Vẫn cho phép xem preview dù không gọi được API
+      // Vẫn cho phép xem preview dù không gọi được API (không có booking_id)
       setConfirmationData(confirmationPayload);
     } finally {
       setLoading(false);
