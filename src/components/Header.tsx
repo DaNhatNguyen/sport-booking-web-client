@@ -14,7 +14,11 @@ interface Province {
 }
 
 interface User {
+  id?: number;
   fullName: string;
+  email?: string;
+  phone?: string;
+  avatar?: string;
   token: string;
   [key: string]: any;
 }
@@ -32,7 +36,6 @@ const Header: React.FC = () => {
   const [step, setStep] = useState<number>(1);
 
   const [showHistory, setShowHistory] = useState(false);
-  const user1 = JSON.parse(localStorage.getItem('user') || '{}');
 
   // Lấy dữ liệu khu vực trong file
   useEffect(() => {
@@ -266,7 +269,7 @@ const Header: React.FC = () => {
       <BookingHistoryModal
         show={showHistory}
         onHide={() => setShowHistory(false)}
-        userId={user?._id}
+        userId={user?.id?.toString() || ''}
       />
     </Navbar>
   );
