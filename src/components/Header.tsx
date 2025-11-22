@@ -75,24 +75,28 @@ const Header: React.FC = () => {
   }, []);
 
   return (
-    <Navbar bg="white" expand="lg" className="border-bottom py-2">
+    <Navbar
+      expand="lg"
+      className="border-bottom py-2"
+      style={{
+        backgroundColor: '#f4f4f4',
+      }}
+    >
       <Container className="px-3 px-lg-5">
         <Navbar.Brand href="/">
-          <img src={logo} alt="Hi5Sport" height="40" />
+          <img src={logo} alt="Nsport" height="40" />
         </Navbar.Brand>
 
-        <Nav className="me-auto align-items-center d-none d-lg-flex">
-          <Nav.Link as={Link} to="/loai-san/bong-da">
-            <FaFutbol /> Bóng đá
-          </Nav.Link>
-          <Nav.Link as={Link} to="/loai-san/tennis">
-            <MdSportsTennis /> Tennis
-          </Nav.Link>
-          <Nav.Link as={Link} to="/loai-san/cau-long">
-            <GiTennisRacket /> Cầu lông
-          </Nav.Link>
-          <Nav.Link as={Link} to="/loai-san/bong-ban">
-            <FaTableTennis /> Bóng bàn
+        <Nav
+          className="me-auto align-items-center d-none d-lg-flex"
+          style={{
+            borderRadius: 10,
+            backgroundColor: '#fff',
+            height: 30,
+          }}
+        >
+          <Nav.Link as={Link} to="/">
+            Trang chủ
           </Nav.Link>
         </Nav>
 

@@ -14,14 +14,14 @@ const Footer: React.FC = () => {
           <Row className="gy-4">
             <Col md={4}>
               <img src={logo} alt="logo" height={40} className="mb-3" />
-              <p>A3.11 Block A Tòa nhà Sky Center 5B Phổ Quang, Phường 2, Quận Tân Bình, TP.HCM</p>
+              <p>879 Giải Phóng, Hoàng Mai, Hà Nội</p>
               <p>
                 <FaPhone className="me-2" />
-                0904438369
+                0985456789
               </p>
               <p>
                 <FaEnvelope className="me-2" />
-                info@vietcas.vn
+                nguyendanhat@gmail.com
               </p>
             </Col>
             <Col md={4}>
@@ -54,7 +54,7 @@ const Footer: React.FC = () => {
       {/* Footer bottom */}
       <div className="text-center py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
         <span className="text-light">
-          Copyright © 2023 – <span className="text-danger">Hi5port</span>. All rights reserved.
+          Copyright © 2025 – <span className="text-danger">Nport</span>. All rights reserved.
           Designed by <span className="text-danger">DaNhatNguyen</span>
         </span>
       </div>

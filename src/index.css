@@ -1,5 +1,6 @@
 body {
   font-family: 'Inter', sans-serif;
+  background-color: #f4f4f4;
 }
 
 /* Đổi màu nút đóng thành trắng khi ở trong header có nền bg-primary */

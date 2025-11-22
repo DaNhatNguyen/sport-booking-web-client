@@ -67,12 +67,17 @@ const NearbyCourts: React.FC = () => {
                 setShowDetail(true);
               }}
             >
-              <Card className="h-100 border-0">
+              <Card
+                className="h-100"
+                style={{
+                  borderRadius: 10,
+                }}
+              >
                 <Card.Img
                   variant="top"
                   src={court.images?.[0] || defaultCourtImage}
                   // src={'../assets/default-image.png'}
-                  style={{ height: '160px', objectFit: 'cover' }}
+                  style={{ height: '160px', objectFit: 'cover', border: 'none' }}
                 />
                 <Card.Body>
                   <div className="text-muted small mb-1">

@@ -10,6 +10,7 @@ import SearchBar from '../components/SearchBar';
 import Footer from '../components/Footer';
 import { checkLoginAndRedirect } from '../utils/auth';
 import { toast } from 'react-toastify';
+import defaultCourtImage from '../assets/default-court-image.png';
 
 const useQuery = () => new URLSearchParams(useLocation().search);
 
@@ -46,10 +47,12 @@ const SearchResults: React.FC = () => {
     <>
       <Header />
       <ImageSlider />
-      <div style={{ position: 'relative' }}>
+      <div
+        style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
+      >
         <SearchBar />
       </div>
-      <div className='mtopCourt'>
+      <div className="mtopCourt">
         <Container className="my-5">
           <h4 className="fw-bold mb-3">Kết quả tìm kiếm</h4>
 
@@ -70,7 +73,7 @@ const SearchResults: React.FC = () => {
                       flex: '1 1 calc(25% - 1rem)',
                       minWidth: '260px',
                       maxWidth: '300px',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
                     }}
                     onClick={() => {
                       setSelectedCourt(court);
@@ -80,7 +83,7 @@ const SearchResults: React.FC = () => {
                     <Card className="h-100 border-0">
                       <Card.Img
                         variant="top"
-                        src={court.images?.[0] || '/default-image.png'}
+                        src={defaultCourtImage}
                         style={{ height: '160px', objectFit: 'cover' }}
                       />
                       <Card.Body>
@@ -101,12 +104,7 @@ const SearchResults: React.FC = () => {
             </div>
           )}
 
-          <Modal
-            show={showDetail}
-            onHide={() => setShowDetail(false)}
-            size="lg"
-            centered
-          >
+          <Modal show={showDetail} onHide={() => setShowDetail(false)} size="lg" centered>
             <Modal.Header closeButton>
               <Modal.Title>{selectedCourt?.name}</Modal.Title>
             </Modal.Header>
@@ -119,11 +117,23 @@ const SearchResults: React.FC = () => {
                       alt="court"
                       className="img-fluid rounded mb-3"
                     />
-                    <p><strong>Loại sân:</strong> {selectedCourt?.type}</p>
-                    <p><strong>Địa chỉ:</strong> {selectedCourt?.address}, {selectedCourt?.district}, {selectedCourt?.province}</p>
-                    <p><strong>Thời gian mở cửa:</strong> {selectedCourt?.openTime} - {selectedCourt?.closeTime}</p>
-                    <p><strong>Điện thoại:</strong> {selectedCourt?.phoneNumber || 'Chưa có'}</p>
-                    <p><strong>Đánh giá:</strong> <FaStar color='#ffc960' /> {selectedCourt?.rating}</p>
+                    <p>
+                      <strong>Loại sân:</strong> {selectedCourt?.type}
+                    </p>
+                    <p>
+                      <strong>Địa chỉ:</strong> {selectedCourt?.address}, {selectedCourt?.district},{' '}
+                      {selectedCourt?.province}
+                    </p>
+                    <p>
+                      <strong>Thời gian mở cửa:</strong> {selectedCourt?.openTime} -{' '}
+                      {selectedCourt?.closeTime}
+                    </p>
+                    <p>
+                      <strong>Điện thoại:</strong> {selectedCourt?.phoneNumber || 'Chưa có'}
+                    </p>
+                    <p>
+                      <strong>Đánh giá:</strong> <FaStar color="#ffc960" /> {selectedCourt?.rating}
+                    </p>
                   </div>
                 </Tab>
                 <Tab eventKey="services" title="Dịch vụ">
@@ -136,7 +146,12 @@ const SearchResults: React.FC = () => {
                         key={idx}
                         src={img}
                         alt={`court-img-${idx}`}
-                        style={{ width: '150px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
+                        style={{
+                          width: '150px',
+                          height: '100px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                        }}
                       />
                     ))}
                   </div>
@@ -149,7 +164,7 @@ const SearchResults: React.FC = () => {
               <div className="text-end">
                 <Button
                   variant="warning"
-                  style={{ color: "#ffff" }}
+                  style={{ color: '#ffff' }}
                   onClick={() =>
                     checkLoginAndRedirect(navigate, () => {
                       if (selectedCourt?._id) {
