@@ -27,16 +27,17 @@ import {
   IconPhoto,
   IconMessage2,
   IconStarFilled,
+  IconTrophy,
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
-import { getCourtGroupsByLocation, getReviews, createReview } from '../services/courtService';
+import { getTopRatedCourts, getReviews, createReview } from '../services/courtService';
 import { CourtGroup } from '../types/courtGroup';
 import { Review } from '../types/Review';
 import { checkLoginAndRedirect } from '../utils/auth';
 import defaultCourtImage from '../assets/default-court-image.png';
 
-const NearbyCourts: React.FC = () => {
+const TopRatedCourts: React.FC = () => {
   const [courtGroups, setCourtGroups] = useState<CourtGroup[]>([]);
   const [selectedCourt, setSelectedCourt] = useState<CourtGroup | null>(null);
   const [modalOpened, setModalOpened] = useState(false);
@@ -58,20 +59,13 @@ const NearbyCourts: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchCourtGroups = async () => {
+    const fetchTopRatedCourts = async () => {
       try {
         setLoadingCourts(true);
-        const location = JSON.parse(localStorage.getItem('selectedLocation') || '{}');
-        const { province, district } = location;
-
-        if (!province?.name || !district) {
-          return;
-        }
-
-        const data = await getCourtGroupsByLocation(province.name, district);
+        const data = await getTopRatedCourts();
         setCourtGroups(data);
       } catch (err) {
-        console.error('Lỗi khi gọi API court group:', err);
+        console.error('Lỗi khi gọi API top rated courts:', err);
         notifications.show({
           title: 'Lỗi',
           message: 'Không thể tải danh sách sân. Vui lòng thử lại.',
@@ -82,10 +76,7 @@ const NearbyCourts: React.FC = () => {
       }
     };
 
-    fetchCourtGroups();
-
-    window.addEventListener('locationChanged', fetchCourtGroups);
-    return () => window.removeEventListener('locationChanged', fetchCourtGroups);
+    fetchTopRatedCourts();
   }, []);
 
   useEffect(() => {
@@ -171,8 +162,10 @@ const NearbyCourts: React.FC = () => {
   return (
     <Container size="xl" pb={20}>
       <Stack gap="xs" mb="md">
-        <Title order={3}>Sân gần bạn</Title>
-        <Text c="dimmed">Khám phá các sân nổi bật quanh khu vực bạn đã chọn</Text>
+        <Group gap="xs">
+          <Title order={3}>Sân được đề xuất</Title>
+        </Group>
+        <Text c="dimmed">Khám phá những sân thể thao được người dùng đánh giá tốt nhất</Text>
       </Stack>
 
       {loadingCourts ? (
@@ -180,8 +173,8 @@ const NearbyCourts: React.FC = () => {
           <Loader color="green" />
         </Group>
       ) : courtGroups.length === 0 ? (
-        <Alert title="Không có sân phù hợp" color="gray">
-          Không tìm thấy sân nào trong khu vực này. Hãy thử thay đổi địa điểm để xem thêm lựa chọn.
+        <Alert title="Không có dữ liệu" color="gray">
+          Hiện tại chưa có sân nào được đánh giá.
         </Alert>
       ) : (
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="lg">
@@ -381,4 +374,6 @@ const NearbyCourts: React.FC = () => {
   );
 };
 
-export default NearbyCourts;
+export default TopRatedCourts;
+
+

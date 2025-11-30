@@ -1,12 +1,16 @@
 export interface BookingItem {
   _id: string;
   date: string;
-  timeSlot: {
+  booking_date?: string;
+  timeSlot?: {
     startTime: string;
     endTime: string;
   };
-  status: 'pending' | 'confirmed' | 'cancelled';
+  startTime?: string;
+  endTime?: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'PENDING' | 'CONFIRMED' | 'CANCELLED';
   courtName: string;
   courtGroupName: string;
-  address: string;
+  address?: string;
+  price?: number;
 }

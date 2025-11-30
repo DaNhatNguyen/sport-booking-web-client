@@ -8,6 +8,7 @@ import CourtByTypePage from '../pages/CourtByTypePage';
 import BookingPage from '../pages/BookingPage';
 import { CourtBookingTable } from '../components/CourtBookingTable';
 import PaymentPage from '../pages/PaymentPage';
+import CollaborationPage from '../pages/CollaborationPage';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/loai-san/:type" element={<CourtByTypePage />} />
       <Route path="/booking/:groupId/data" element={<BookingPage />} />
       <Route path="/payment" element={<PaymentPage />} />
+      <Route path="/collaboration" element={<CollaborationPage />} />
     </Routes>
   );
 };

@@ -42,3 +42,13 @@ export const fetchCurrentUser = async (token: string): Promise<User> => {
 export const loginApi = (data: { email: string; password: string }) => {
   return axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, data);
 };
+
+// Đăng ký tài khoản đối tác (Owner)
+export const registerOwner = async (formData: FormData): Promise<any> => {
+  const res = await axios.post(`${API_BASE}/auth/register-owner`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data;
+};

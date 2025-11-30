@@ -7,7 +7,7 @@ import CustomButton from './CustomButton';
 
 const Footer: React.FC = () => {
   return (
-    <footer style={{ backgroundColor: '#003366', color: '#fff', fontSize: '0.9rem' }}>
+    <footer style={{ backgroundColor: '#0e5089', color: '#fff', fontSize: '0.9rem' }}>
       {/* Nội dung footer */}
       <div className="py-5">
         <Container>

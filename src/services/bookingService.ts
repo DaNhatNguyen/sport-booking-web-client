@@ -65,3 +65,25 @@ export const getBookingsByUserId = async (userId: string): Promise<BookingItem[]
     throw error;
   }
 };
+
+// Lấy thông tin thanh toán (bao gồm thông tin ngân hàng của chủ sân)
+export const getPaymentInfo = async (bookingId: number): Promise<any> => {
+  const res = await api.get(`/bookings/${bookingId}/payment-info`);
+  return res.data.result;
+};
+
+// Xác nhận thanh toán (upload ảnh chuyển khoản)
+export const confirmPayment = async (bookingId: number, formData: FormData): Promise<any> => {
+  const res = await api.post(`/bookings/${bookingId}/confirm-payment`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return res.data.result;
+};
+
+// Hủy booking đã hết hạn thanh toán
+export const cancelExpiredBooking = async (bookingId: number): Promise<any> => {
+  const res = await api.delete(`/bookings/${bookingId}/cancel-expired`);
+  return res.data.result;
+};

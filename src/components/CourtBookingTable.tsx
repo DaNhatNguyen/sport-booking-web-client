@@ -121,8 +121,10 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ courtGroup
   const bookingCourts = bookingData?.bookingCourts || [];
   // const { booking_courts } = data;
 
-  const open_time = courtGroup?.openTime;
-  const close_time = courtGroup?.closeTime;
+  const open_time = courtGroup?.open_time;
+  const close_time = courtGroup?.close_time;
+
+  console.log(open_time, open_time, 'aaa');
 
   const timeSlots = useMemo(
     () => generateTimeSlots(open_time, close_time),
@@ -235,37 +237,50 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ courtGroup
       user_id: userId,
       court_id: courtId,
       booking_date: bookingDate,
-      time_slots: mergedSlots, // [{ start_time: "14:00", end_time: "16:00" }, ...]
+      time_slots: mergedSlots,
       total_price: totalPrice,
-      status: 'PENDING', // hoặc 'confirmed' tùy flow
+      status: 'PAYING',
       court_name: courtName,
-      full_address: courtGroup?.address || 'Đang cập nhật', // nếu có địa chỉ
+      full_address: courtGroup?.address || 'Đang cập nhật',
+      court_group_id: courtGroup?._id,
     };
 
-    // 8. Gọi API xác nhận (nếu backend có endpoint lấy preview)
     setLoading(true);
     try {
-      const confirmationPayload = {
-        user_id: userId,
-        court_id: courtId,
-        booking_date: bookingDate,
-        time_slots: mergedSlots, // [{ start_time: "14:00", end_time: "16:00" }, ...]
-        total_price: totalPrice,
-        status: 'PENDING', // hoặc 'confirmed' tùy flow
-        court_name: courtName,
-        full_address: courtGroup?.address || 'Đang cập nhật', // nếu có địa chỉ
-      };
-      await getBookingConfirmation(confirmationPayload);
-
-      // Nếu backend trả thêm thông tin (địa chỉ, tên, v.v.) thì ưu tiên dùng
+      // Lưu booking_id từ backend để dùng cho thanh toán
       setConfirmationData(confirmationPayload);
     } catch (err) {
       console.error('Lỗi khi xác nhận đặt sân:', err);
-      // Vẫn cho phép xem preview dù không gọi được API
+      // Vẫn cho phép xem preview dù không gọi được API (không có booking_id)
       setConfirmationData(confirmationPayload);
     } finally {
       setLoading(false);
       setShowConfirmationModal(true);
+    }
+  };
+
+  const handleClickConfirmBooking = async () => {
+    try {
+      setLoading(true);
+      const apiResult = await getBookingConfirmation(confirmationData);
+
+      // Tạo paymentData mới với booking_id từ API response
+      const paymentData = {
+        ...confirmationData,
+        booking_id: apiResult.booking_id,
+      };
+
+      console.log('Payment data with booking_id:', paymentData);
+
+      // Navigate với paymentData mới (có booking_id)
+      navigate(`/payment`, {
+        state: paymentData,
+      });
+    } catch (error) {
+      console.error('Lỗi khi xác nhận đặt sân:', error);
+      alert('Có lỗi xảy ra khi đặt sân. Vui lòng thử lại!');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -556,15 +571,7 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ courtGroup
               <Button variant="outline" onClick={() => setShowConfirmationModal(false)}>
                 Hủy
               </Button>
-              <Button
-                onClick={() => {
-                  navigate(`/payment`, {
-                    state: confirmationData,
-                  });
-                }}
-              >
-                Tiếp tục
-              </Button>
+              <Button onClick={handleClickConfirmBooking}>Tiếp tục</Button>
             </Group>
           </Stack>
         )}

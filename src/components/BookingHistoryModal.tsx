@@ -16,12 +16,9 @@ const BookingHistoryModal: React.FC<Props> = ({ show, onHide, userId }) => {
 
   useEffect(() => {
     if (!show || !userId) {
-      console.log('BookingHistoryModal - Not fetching:', { show, userId });
       return;
     }
 
-    console.log('BookingHistoryModal - Fetching bookings for userId:', userId);
-    
     const fetchBookings = async () => {
       setLoading(true);
       setError('');
@@ -32,9 +29,10 @@ const BookingHistoryModal: React.FC<Props> = ({ show, onHide, userId }) => {
         setBookings(data);
       } catch (error: any) {
         console.error('Lỗi khi lấy lịch đã đặt:', error);
-        const errorMessage = error.response?.data?.message || 
-                           error.message || 
-                           'Không thể tải lịch sử đặt sân. Vui lòng thử lại.';
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          'Không thể tải lịch sử đặt sân. Vui lòng thử lại.';
         setError(errorMessage);
         setBookings([]);
       } finally {
@@ -85,20 +83,20 @@ const BookingHistoryModal: React.FC<Props> = ({ show, onHide, userId }) => {
             <p className="mt-2 text-muted">Đang tải lịch sử đặt sân...</p>
           </div>
         )}
-        
+
         {!loading && error && (
           <Alert variant="danger" className="mb-0">
             <Alert.Heading>Có lỗi xảy ra</Alert.Heading>
             <p className="mb-0">{error}</p>
           </Alert>
         )}
-        
+
         {!loading && !error && bookings.length === 0 && (
           <div className="text-center py-4">
             <p className="text-muted">Bạn chưa có lịch đặt nào.</p>
           </div>
         )}
-        
+
         {!loading && !error && bookings.length > 0 && (
           <div>
             {bookings.map((b) => (
@@ -114,18 +112,22 @@ const BookingHistoryModal: React.FC<Props> = ({ show, onHide, userId }) => {
                   <strong>Sân:</strong> {b.courtName}
                 </div>
                 <div className="mb-2">
-                  <strong>Thời gian:</strong> {b.timeSlot.startTime} - {b.timeSlot.endTime}
+                  <strong>Thời gian:</strong> {b.timeSlot?.startTime || b.startTime || 'N/A'} -{' '}
+                  {b.timeSlot?.endTime || b.endTime || 'N/A'}
                 </div>
                 <div className="mb-2">
-                  <strong>Ngày:</strong> {new Date(b.date).toLocaleDateString('vi-VN', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
+                  <strong>Ngày:</strong>{' '}
+                  {b.date || b.booking_date
+                    ? new Date(b.date || b.booking_date || '').toLocaleDateString('vi-VN', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : 'N/A'}
                 </div>
                 <div className="mb-0">
-                  <strong>Địa chỉ:</strong> {b.address}
+                  <strong>Địa chỉ:</strong> {b.address || 'Chưa có địa chỉ'}
                 </div>
               </div>
             ))}

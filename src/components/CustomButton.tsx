@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from 'react-bootstrap';
+import { Button } from '@mantine/core';
 
 interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: string;
@@ -9,13 +9,12 @@ interface CustomButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
 
 const CustomButton: React.FC<CustomButtonProps> = ({
   type = 'button',
-  variant = 'primary',
   className = '',
   children,
   ...rest
 }) => {
   return (
-    <Button type={type} variant={variant} className={className} {...rest}>
+    <Button type={type} className={className} {...rest} style={{ backgroundColor: '#0e5089' }}>
       {children}
     </Button>
   );

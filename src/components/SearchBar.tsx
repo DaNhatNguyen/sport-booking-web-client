@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form } from 'react-bootstrap';
+import {
+  Paper,
+  Stack,
+  Title,
+  Text,
+  Select,
+  Button,
+  SimpleGrid,
+  Group,
+  Badge,
+  Divider,
+} from '@mantine/core';
+import { IconBallTennis, IconMapPin, IconSearch } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
-import CustomButton from './CustomButton';
+import { notifications } from '@mantine/notifications';
 
 interface LocationData {
   name: string;
@@ -29,94 +41,95 @@ const SearchBar: React.FC = () => {
     setSelectedDistrict('');
   }, [selectedProvince, locations]);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleSearch = () => {
     if (!selectedSport || !selectedProvince || !selectedDistrict) {
-      alert('Vui lòng chọn đầy đủ thông tin để tìm kiếm!');
+      notifications.show({
+        title: 'Thiếu thông tin',
+        message: 'Vui lòng chọn đầy đủ môn thể thao, tỉnh/thành và quận/huyện.',
+        color: 'yellow',
+      });
       return;
     }
 
-    try {
-      navigate(
-        `/search-results?type=${selectedSport}&city=${selectedProvince}&district=${selectedDistrict}`
-      );
-    } catch (err) {
-      console.error('Lỗi khi chuyển hướng tìm kiếm:', err);
-    }
+    navigate(
+      `/search-results?type=${selectedSport}&city=${selectedProvince}&district=${selectedDistrict}`
+    );
   };
 
   return (
-    <div
-      className="bg-white"
+    <Paper
+      shadow="xl"
+      radius="lg"
+      p={{ base: 'lg', md: 'xl' }}
       style={{
         position: 'absolute',
-        top: -20,
+        top: -40,
         zIndex: 10,
         width: '100%',
-        maxWidth: '1140px',
-        borderRadius: 10,
+        maxWidth: 1140,
       }}
     >
-      <Container
-        className="shadow rounded px-4 py-3 bg-white"
-        style={{
-          top: 10,
-        }}
-      >
-        <h5 className="fw-bold mb-1">Đặt sân thể thao ngay</h5>
-        <p className="text-muted mb-4">Tìm kiếm sân chơi thể thao, thi đấu khắp cả nước</p>
-
-        <Form onSubmit={handleSearch}>
-          <Row className="g-2 align-items-center">
-            <Col md={3} sm={6}>
-              <Form.Select value={selectedSport} onChange={(e) => setSelectedSport(e.target.value)}>
-                <option value="">Chọn sân thể thao</option>
-                <option value="Badminton">Sân cầu lông</option>
-                <option value="Football">Sân bóng đá</option>
-                <option value="Tennis">Sân tennis</option>
-                <option value="Basketball">Sân bóng rổ</option>
-              </Form.Select>
-            </Col>
-
-            <Col md={3} sm={6}>
-              <Form.Select
-                value={selectedProvince}
-                onChange={(e) => setSelectedProvince(e.target.value)}
-              >
-                <option value="">Chọn tỉnh/thành phố</option>
-                {locations.map((loc, idx) => (
-                  <option key={idx} value={loc.name}>
-                    {loc.name}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-
-            <Col md={3} sm={6}>
-              <Form.Select
-                value={selectedDistrict}
-                onChange={(e) => setSelectedDistrict(e.target.value)}
-                disabled={!districts.length}
-              >
-                <option value="">Chọn quận/huyện</option>
-                {districts.map((d, idx) => (
-                  <option key={idx} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-
-            <Col md={3} sm={6}>
-              <CustomButton type="submit" variant="danger" className="w-100">
-                Tìm kiếm ngay
-              </CustomButton>
-            </Col>
-          </Row>
-        </Form>
-      </Container>
-    </div>
+      <Stack gap="xs">
+        <Group justify="space-between" align="flex-end" wrap="wrap">
+          <div>
+            <Title order={4}>Đặt sân thể thao ngay</Title>
+            <Text size="sm" c="dimmed">
+              Tìm kiếm sân chơi thể thao, thi đấu khắp cả nước
+            </Text>
+          </div>
+          <Badge color="green" variant="light" leftSection={<IconBallTennis size={16} />}>
+            Cập nhật liên tục
+          </Badge>
+        </Group>
+        <Divider />
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
+          <Select
+            label="Loại sân"
+            placeholder="Chọn sân thể thao"
+            data={[
+              { label: 'Sân cầu lông', value: 'Badminton' },
+              { label: 'Sân bóng đá', value: 'Football' },
+              { label: 'Sân tennis', value: 'Tennis' },
+              { label: 'Sân bóng rổ', value: 'Basketball' },
+            ]}
+            value={selectedSport}
+            onChange={(value) => setSelectedSport(value || '')}
+            leftSection={<IconBallTennis size={16} />}
+            withAsterisk
+          />
+          <Select
+            label="Tỉnh/Thành phố"
+            placeholder="Chọn tỉnh/thành phố"
+            data={locations.map((loc) => ({ label: loc.name, value: loc.name }))}
+            value={selectedProvince}
+            onChange={(value) => setSelectedProvince(value || '')}
+            searchable
+            leftSection={<IconMapPin size={16} />}
+            withAsterisk
+          />
+          <Select
+            label="Quận/Huyện"
+            placeholder="Chọn quận/huyện"
+            data={districts.map((d) => ({ label: d, value: d }))}
+            value={selectedDistrict}
+            onChange={(value) => setSelectedDistrict(value || '')}
+            disabled={!districts.length}
+            searchable
+            leftSection={<IconMapPin size={16} />}
+            withAsterisk
+          />
+          <Button
+            radius="md"
+            size="lg"
+            color="green"
+            onClick={handleSearch}
+            leftSection={<IconSearch size={18} />}
+          >
+            Tìm kiếm ngay
+          </Button>
+        </SimpleGrid>
+      </Stack>
+    </Paper>
   );
 };
 

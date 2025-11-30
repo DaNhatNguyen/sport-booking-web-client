@@ -1,12 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Overlay, Popover, Navbar, Nav, Container, Modal } from 'react-bootstrap';
-import { FaFutbol, FaTableTennis, FaMapMarkerAlt } from 'react-icons/fa';
-import { GiTennisRacket } from 'react-icons/gi';
-import { MdSportsTennis } from 'react-icons/md';
-import { getStoredUser, fetchCurrentUser, clearUser } from '../services/authService';
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Paper,
+  Group,
+  Text,
+  Button,
+  Avatar,
+  Menu,
+  Divider,
+  Modal,
+  SimpleGrid,
+  ScrollArea,
+  Stack,
+  ActionIcon,
+  Badge,
+} from '@mantine/core';
+import { IconMapPin, IconChevronDown, IconLogout, IconHistory, IconUser, IconSettings } from '@tabler/icons-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { getStoredUser, clearUser } from '../services/authService';
 import logo from '../assets/logo.png';
-import { Link } from 'react-router-dom';
 import BookingHistoryModal from './BookingHistoryModal';
+import UserProfileModal from './UserProfileModal';
 import userImg from '../assets/userImg.png';
 interface Province {
   name: string;
@@ -24,8 +38,6 @@ interface User {
 }
 
 const Header: React.FC = () => {
-  const [showOverlay, setShowOverlay] = useState<boolean>(false);
-  const target = useRef<HTMLSpanElement | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -36,6 +48,8 @@ const Header: React.FC = () => {
   const [step, setStep] = useState<number>(1);
 
   const [showHistory, setShowHistory] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const navigate = useNavigate();
 
   // Lấy dữ liệu khu vực trong file
   useEffect(() => {
@@ -77,205 +91,222 @@ const Header: React.FC = () => {
     checkLogin();
   }, []);
 
+  const buildAvatarUrl = (avatarPath?: string) => {
+    if (!avatarPath) return userImg;
+    if (avatarPath.startsWith('http')) return avatarPath;
+    const base = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+    return `${base}/files/court-images/${avatarPath}`;
+  };
+
   return (
-    <Navbar
-      expand="lg"
-      className="border-bottom py-2"
-      style={{
-        backgroundColor: '#f4f4f4',
-      }}
-    >
-      <Container className="px-3 px-lg-5">
-        <Navbar.Brand href="/">
-          <img src={logo} alt="Nsport" height="40" />
-        </Navbar.Brand>
+    <>
+      <Paper
+        radius={0}
+        shadow="sm"
+        px={{ base: 'md', md: 'xl' }}
+        py="sm"
+        withBorder
+        style={{ position: 'sticky', top: 0, zIndex: 100 }}
+      >
+        <Group justify="space-between" gap="lg" wrap="nowrap">
+          <Group gap="sm">
+            <Box component={Link} to="/" style={{ display: 'flex', alignItems: 'center' }}>
+              <img src={logo} alt="Nsport" height="40" />
+            </Box>
+            <Group gap="sm" visibleFrom="md">
+              <Button
+                component={Link}
+                to="/"
+                variant="subtle"
+                color="dark"
+                radius="md"
+              >
+                Trang chủ
+              </Button>
+              <Button
+                component={Link}
+                to="/collaboration"
+                variant="light"
+                color="green"
+                radius="md"
+              >
+                Dành cho đối tác
+              </Button>
+            </Group>
+          </Group>
 
-        <Nav
-          className="me-auto align-items-center d-none d-lg-flex"
-          style={{
-            borderRadius: 10,
-            backgroundColor: '#fff',
-            height: 30,
-          }}
-        >
-          <Nav.Link as={Link} to="/">
-            Trang chủ
-          </Nav.Link>
-        </Nav>
-
-        <Nav className="align-items-center">
-          <div className="d-flex align-items-center justify-content-between flex-grow-1 flex-wrap">
-            {/* Khu vực */}
-            <div
-              className="location-wrapper me-3"
+          <Group gap="sm" wrap="wrap" justify="flex-end">
+            <Button
+              variant="subtle"
+              color="dark"
+              leftSection={<IconMapPin size={16} />}
+              rightSection={<IconChevronDown size={16} />}
               onClick={() => setShowModal(true)}
-              style={{ cursor: 'pointer' }}
+              radius="md"
             >
-              <div className="d-flex align-items-center">
-                <FaMapMarkerAlt className="me-1 text-danger" />
-                <div>
-                  <div className="text-uppercase" style={{ fontSize: '0.75rem', lineHeight: '1' }}>
-                    Khu vực
-                  </div>
-                  <div style={{ fontSize: '0.875rem' }}>
-                    {selectedDistrict && selectedProvince
-                      ? `${selectedDistrict}, ${selectedProvince.name.replace(
-                          /^Tỉnh |^Thành phố /,
-                          ''
-                        )}`
-                      : 'Chọn khu vực'}
-                  </div>
-                </div>
-              </div>
-            </div>
+              <Stack gap={0} align="flex-start" lh="1">
+                <Text size="xs" c="dimmed">
+                  Khu vực
+                </Text>
+                <Text size="sm">
+                  {selectedDistrict && selectedProvince
+                    ? `${selectedDistrict}, ${selectedProvince.name.replace(/^Tỉnh |^Thành phố /, '')}`
+                    : 'Chọn khu vực'}
+                </Text>
+              </Stack>
+            </Button>
 
-            {/* Người dùng */}
             {loading ? null : user ? (
-              <>
-                <span
-                  ref={target}
-                  className="d-flex align-items-center cursor-pointer"
-                  onClick={() => setShowOverlay(!showOverlay)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <img
-                    src={userImg}
-                    alt="avatar"
-                    width="32"
-                    height="32"
-                    className="rounded-circle me-2"
-                  />
-                  {user.fullName}
-                </span>
-
-                <Overlay
-                  target={target.current}
-                  show={showOverlay}
-                  placement="bottom-end"
-                  rootClose
-                  onHide={() => setShowOverlay(false)}
-                >
-                  <Popover id="popover-user-menu">
-                    <Popover.Body>
-                      <div className="d-flex flex-column">
-                        <a
-                          href="#"
-                          className="mb-2 text-decoration-none text-dark"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setShowHistory(true);
-                          }}
-                        >
-                          Danh sách lịch đã đặt
-                        </a>
-                        <hr className="my-2" />
-                        <a
-                          href="/"
-                          onClick={() => {
-                            clearUser();
-                            setUser(null);
-                          }}
-                          className="text-danger text-decoration-none"
-                        >
-                          Đăng xuất
-                        </a>
-                      </div>
-                    </Popover.Body>
-                  </Popover>
-                </Overlay>
-              </>
+              <Menu shadow="md" width={220} position="bottom-end">
+                <Menu.Target>
+                  <Button
+                    variant="light"
+                    color="gray"
+                    radius="xl"
+                    leftSection={<Avatar src={buildAvatarUrl(user.avatar)} size={28} />}
+                    rightSection={<IconChevronDown size={16} />}
+                  >
+                    <Text size="sm" fw={500}>
+                      {user.fullName}
+                    </Text>
+                  </Button>
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Label>Tài khoản</Menu.Label>
+                  <Menu.Item
+                    leftSection={<IconUser size={16} />}
+                    onClick={() => setShowProfile(true)}
+                  >
+                    Quản lý thông tin
+                  </Menu.Item>
+                  <Menu.Item
+                    leftSection={<IconHistory size={16} />}
+                    onClick={() => setShowHistory(true)}
+                  >
+                    Lịch đã đặt
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item
+                    color="red"
+                    leftSection={<IconLogout size={16} />}
+                    onClick={() => {
+                      clearUser();
+                      setUser(null);
+                      navigate('/');
+                    }}
+                  >
+                    Đăng xuất
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
             ) : (
-              <div className="d-flex gap-2">
-                <a href="/login" className="btn btn-outline-primary btn-sm">
+              <Group gap="xs">
+                <Button component={Link} to="/login" variant="default" radius="md">
                   Đăng nhập
-                </a>
-                <a href="/signup" className="btn btn-primary btn-sm wrap-btn-signup">
+                </Button>
+                <Button component={Link} to="/signup" radius="md">
                   Đăng ký
-                </a>
-              </div>
+                </Button>
+              </Group>
             )}
-          </div>
-        </Nav>
-      </Container>
+          </Group>
+        </Group>
+      </Paper>
 
-      {/* Modal chọn khu vực */}
       <Modal
-        show={showModal}
-        onHide={() => {
+        opened={showModal}
+        onClose={() => {
           setShowModal(false);
           setStep(1);
         }}
+        title={
+          step === 1 ? 'Vui lòng chọn tỉnh/thành phố' : `Chọn quận/huyện tại ${selectedProvince?.name}`
+        }
         size="lg"
         centered
       >
-        <Modal.Header className="custom-modal" closeButton>
-          <Modal.Title>
-            {step === 1 ? 'Vui lòng chọn khu vực' : `Chọn quận/huyện tại ${selectedProvince?.name}`}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body style={{ maxHeight: '400px', overflowY: 'auto' }}>
+        <ScrollArea h={400}>
           {step === 1 && (
-            <div className="row">
+            <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="sm">
               {locationData.map((province, idx) => (
-                <div
+                <Paper
                   key={idx}
-                  className="col-6 py-2 border-bottom"
+                  withBorder
+                  radius="md"
+                  p="md"
                   style={{ cursor: 'pointer' }}
                   onClick={() => {
                     setSelectedProvince(province);
                     setStep(2);
                   }}
                 >
-                  {province.name}
-                </div>
+                  <Stack gap={4}>
+                    <Text fw={500}>{province.name}</Text>
+                    <Text size="sm" c="dimmed">
+                      {province.districts.length} quận/huyện
+                    </Text>
+                  </Stack>
+                </Paper>
               ))}
-            </div>
+            </SimpleGrid>
           )}
 
           {step === 2 && selectedProvince && (
-            <div className="row">
-              {selectedProvince.districts.map((district, idx) => (
-                <div
-                  key={idx}
-                  className="col-6 py-2 border-bottom"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setSelectedDistrict(district);
-                    setShowModal(false);
-                    setStep(1);
-                    localStorage.setItem(
-                      'selectedLocation',
-                      JSON.stringify({
-                        province: selectedProvince,
-                        district,
-                      })
-                    );
-                    // Phát ra sự kiện cho các component khác biết
-                    window.dispatchEvent(new Event('locationChanged'));
-                  }}
-                >
-                  {district}
-                </div>
-              ))}
-            </div>
+            <Stack gap="xs">
+              <Group justify="space-between">
+                <Button variant="subtle" size="xs" onClick={() => setStep(1)}>
+                  ← Quay lại
+                </Button>
+                <Badge color="green" variant="light">
+                  {selectedProvince.districts.length} quận/huyện
+                </Badge>
+              </Group>
+              <Divider />
+              <SimpleGrid cols={{ base: 2, sm: 3 }} spacing="sm">
+                {selectedProvince.districts.map((district, idx) => (
+                  <Paper
+                    key={idx}
+                    withBorder
+                    radius="md"
+                    p="sm"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      setSelectedDistrict(district);
+                      setShowModal(false);
+                      setStep(1);
+                      localStorage.setItem(
+                        'selectedLocation',
+                        JSON.stringify({
+                          province: selectedProvince,
+                          district,
+                        })
+                      );
+                      window.dispatchEvent(new Event('locationChanged'));
+                    }}
+                  >
+                    <Text size="sm">{district}</Text>
+                  </Paper>
+                ))}
+              </SimpleGrid>
+            </Stack>
           )}
-        </Modal.Body>
-        {step === 2 && (
-          <Modal.Footer>
-            <button className="btn btn-outline-secondary btn-sm" onClick={() => setStep(1)}>
-              ← Quay lại
-            </button>
-          </Modal.Footer>
-        )}
+        </ScrollArea>
       </Modal>
 
-      {/* lịch sử đặt sân */}
       <BookingHistoryModal
         show={showHistory}
         onHide={() => setShowHistory(false)}
         userId={user?.id?.toString() || ''}
       />
-    </Navbar>
+
+      {user?.id && (
+        <UserProfileModal
+          opened={showProfile}
+          onClose={() => setShowProfile(false)}
+          userId={user.id}
+        />
+      )}
+    </>
   );
 };
 
