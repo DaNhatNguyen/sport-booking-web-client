@@ -91,6 +91,7 @@ const SearchBar: React.FC = () => {
               { label: 'Sân bóng đá', value: 'Football' },
               { label: 'Sân tennis', value: 'Tennis' },
               { label: 'Sân bóng rổ', value: 'Basketball' },
+              { label: 'Sân pickleball', value: 'Pickleball' },
             ]}
             value={selectedSport}
             onChange={(value) => setSelectedSport(value || '')}

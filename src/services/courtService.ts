@@ -4,6 +4,7 @@ import { FilterParams } from '../types/filterParams';
 import { Court } from '../types/Court';
 import { TimeSlot } from '../types/TimeSlot';
 import { Review } from '../types/Review';
+import { CourtPrice } from '../types/CourtPrice';
 
 const API_BASE = process.env.REACT_APP_API_URL;
 
@@ -144,4 +145,9 @@ export const getTopRatedCourts = async (limit: number = 4): Promise<CourtGroup[]
     params: { limit },
   });
   return res.data.result;
+};
+
+export const getCourtPrices = async (courtGroupId: string | number): Promise<CourtPrice[]> => {
+  const res = await api.get(`/court-groups/${courtGroupId}/prices`);
+  return res.data.result || res.data;
 };

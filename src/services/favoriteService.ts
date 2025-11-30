@@ -42,11 +42,37 @@ export const removeFavorite = async (courtGroupId: string | number): Promise<voi
 export const checkFavorite = async (courtGroupId: string | number): Promise<boolean> => {
   try {
     const res = await api.get(`/favorites/check/${courtGroupId}`);
-    return res.data.result || res.data.isFavorite || false;
-  } catch {
+    const data = res.data;
+    
+    // Debug log (có thể xóa sau)
+    console.log('checkFavorite response:', JSON.stringify(data));
+    
+    // Xử lý nested structure: {"code":1000,"result":{"result":true,"isFavorite":true}}
+    if (data.result && typeof data.result === 'object' && !Array.isArray(data.result)) {
+      // Nếu result là object, check nested values
+      if (data.result.result === true || data.result.isFavorite === true) {
+        return true;
+      }
+      // Nếu nested result là false
+      if (data.result.result === false || data.result.isFavorite === false) {
+        return false;
+      }
+    }
+    
+    // Xử lý direct structure: {"result": true} hoặc {"isFavorite": true}
+    if (data.result === true || data.isFavorite === true) {
+      return true;
+    }
+    
+    // Nếu là false hoặc undefined/null, return false
+    return false;
+  } catch (error) {
+    // Nếu có lỗi (401, 404, etc.), coi như không phải favorite
+    console.error('Error checking favorite:', error);
     return false;
   }
 };
+
 
 
 
