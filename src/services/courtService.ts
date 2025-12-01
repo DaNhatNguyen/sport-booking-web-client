@@ -39,11 +39,21 @@ export const getCourtGroupsByLocation = async (
 export const searchCourtGroups = async (
   type: string,
   city: string,
-  district: string
+  district: string,
+  searchParams?: {
+    search?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    minRating?: number;
+  }
 ): Promise<CourtGroup[]> => {
-  const res = await api.get('/courts/search', {
-    params: { type, city, district },
-  });
+  const params: any = { type, city, district };
+  if (searchParams?.search) params.search = searchParams.search;
+  if (searchParams?.minPrice) params.minPrice = searchParams.minPrice;
+  if (searchParams?.maxPrice) params.maxPrice = searchParams.maxPrice;
+  if (searchParams?.minRating) params.minRating = searchParams.minRating;
+  
+  const res = await api.get('/courts/search', { params });
   return res.data;
 };
 

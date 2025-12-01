@@ -34,7 +34,12 @@ import {
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
-import { getTopRatedCourts, getReviews, createReview, getCourtPrices } from '../services/courtService';
+import {
+  getTopRatedCourts,
+  getReviews,
+  createReview,
+  getCourtPrices,
+} from '../services/courtService';
 import { addFavorite, removeFavorite, checkFavorite } from '../services/favoriteService';
 import { CourtGroup } from '../types/courtGroup';
 import { Review } from '../types/Review';
@@ -74,7 +79,7 @@ const TopRatedCourts: React.FC = () => {
         setLoadingCourts(true);
         const data = await getTopRatedCourts();
         setCourtGroups(data);
-        
+
         // Load favorite status for all courts if user is logged in
         const user = getStoredUser();
         if (user && user.token) {
@@ -92,7 +97,7 @@ const TopRatedCourts: React.FC = () => {
                 }
               })
             );
-            
+
             // Chỉ thêm vào set nếu isFavorite thực sự là true
             const favoriteSet = new Set<string | number>();
             favoriteStatuses.forEach((f) => {
@@ -100,7 +105,7 @@ const TopRatedCourts: React.FC = () => {
                 favoriteSet.add(f.courtId);
               }
             });
-            
+
             console.log('Loaded favorites:', Array.from(favoriteSet));
             setFavorites(favoriteSet);
           } catch (err) {
@@ -229,7 +234,7 @@ const TopRatedCourts: React.FC = () => {
 
   const handleToggleFavorite = async (e: React.MouseEvent, courtId: string | number) => {
     e.stopPropagation(); // Prevent card click
-    
+
     const user = getStoredUser();
     if (!user || !user.token) {
       checkLoginAndRedirect(navigate, () => {});
@@ -261,7 +266,7 @@ const TopRatedCourts: React.FC = () => {
           message: 'Đã thêm vào danh sách yêu thích',
           color: 'pink',
         });
-        
+
         // Verify lại sau 500ms để đảm bảo sync với DB (không block UI)
         setTimeout(async () => {
           try {
@@ -302,7 +307,7 @@ const TopRatedCourts: React.FC = () => {
           // Ignore verification error
         }
       }
-      
+
       notifications.show({
         title: 'Lỗi',
         message: err?.response?.data?.message || 'Không thể cập nhật yêu thích',
@@ -412,7 +417,6 @@ const TopRatedCourts: React.FC = () => {
         onClose={() => setModalOpened(false)}
         title={selectedCourt?.name}
         size="lg"
-        centered
       >
         {selectedCourt && (
           <Stack gap="md">
@@ -488,7 +492,12 @@ const TopRatedCourts: React.FC = () => {
                             </Text>
                             <Stack gap="xs">
                               {pricesForDay.map((price) => (
-                                <Group key={price.id} justify="space-between" p="xs" style={{ backgroundColor: '#f8f9fa', borderRadius: 4 }}>
+                                <Group
+                                  key={price.id}
+                                  justify="space-between"
+                                  p="xs"
+                                  style={{ backgroundColor: '#f8f9fa', borderRadius: 4 }}
+                                >
                                   <Text size="sm">
                                     {price.startTime} - {price.endTime}
                                   </Text>
@@ -589,6 +598,3 @@ const TopRatedCourts: React.FC = () => {
 };
 
 export default TopRatedCourts;
-
-
-

@@ -19,6 +19,7 @@ import {
   Textarea,
   Title,
   Loader,
+  ActionIcon,
 } from '@mantine/core';
 import {
   IconMapPin,
@@ -27,13 +28,18 @@ import {
   IconPhoto,
   IconMessage2,
   IconStarFilled,
+  IconHeart,
+  IconHeartFilled,
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
-import { getCourtGroupsByLocation, getReviews, createReview } from '../services/courtService';
+import { getCourtGroupsByLocation, getReviews, createReview, getCourtPrices } from '../services/courtService';
+import { addFavorite, removeFavorite, checkFavorite } from '../services/favoriteService';
 import { CourtGroup } from '../types/courtGroup';
 import { Review } from '../types/Review';
+import { CourtPrice } from '../types/CourtPrice';
 import { checkLoginAndRedirect } from '../utils/auth';
+import { getStoredUser } from '../services/authService';
 import defaultCourtImage from '../assets/default-court-image.png';
 
 const NearbyCourts: React.FC = () => {
@@ -47,6 +53,10 @@ const NearbyCourts: React.FC = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [loadingCourts, setLoadingCourts] = useState(true);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [courtPrices, setCourtPrices] = useState<CourtPrice[]>([]);
+  const [loadingPrices, setLoadingPrices] = useState(false);
+  const [favorites, setFavorites] = useState<Set<string | number>>(new Set());
+  const [togglingFavorite, setTogglingFavorite] = useState<Set<string | number>>(new Set());
 
   const navigate = useNavigate();
 
@@ -70,6 +80,39 @@ const NearbyCourts: React.FC = () => {
 
         const data = await getCourtGroupsByLocation(province.name, district);
         setCourtGroups(data);
+
+        // Load favorite status for all courts if user is logged in
+        const user = getStoredUser();
+        if (user && user.token) {
+          try {
+            const favoriteStatuses = await Promise.all(
+              data.map(async (court) => {
+                try {
+                  const isFavorite = await checkFavorite(court._id);
+                  return { courtId: court._id, isFavorite: isFavorite === true };
+                } catch (err) {
+                  console.error(`Error checking favorite for court ${court._id}:`, err);
+                  return { courtId: court._id, isFavorite: false };
+                }
+              })
+            );
+
+            // Chỉ thêm vào set nếu isFavorite thực sự là true
+            const favoriteSet = new Set<string | number>();
+            favoriteStatuses.forEach((f) => {
+              if (f.isFavorite === true) {
+                favoriteSet.add(f.courtId);
+              }
+            });
+
+            setFavorites(favoriteSet);
+          } catch (err) {
+            console.error('Error loading favorite statuses:', err);
+            setFavorites(new Set());
+          }
+        } else {
+          setFavorites(new Set());
+        }
       } catch (err) {
         console.error('Lỗi khi gọi API court group:', err);
         notifications.show({
@@ -106,6 +149,26 @@ const NearbyCourts: React.FC = () => {
       fetchReviews();
     }
   }, [modalOpened, selectedCourt]);
+
+  useEffect(() => {
+    const fetchPrices = async () => {
+      if (!selectedCourt?._id) return;
+      try {
+        setLoadingPrices(true);
+        const data = await getCourtPrices(selectedCourt._id);
+        setCourtPrices(data);
+      } catch (err) {
+        console.error('Lỗi khi tải giá sân:', err);
+        setCourtPrices([]);
+      } finally {
+        setLoadingPrices(false);
+      }
+    };
+
+    if (modalOpened && selectedCourt && activeTab === 'services') {
+      fetchPrices();
+    }
+  }, [modalOpened, selectedCourt, activeTab]);
 
   const handleOpenReview = () => {
     checkLoginAndRedirect(navigate, () => {
@@ -168,6 +231,96 @@ const NearbyCourts: React.FC = () => {
     });
   };
 
+  const handleToggleFavorite = async (e: React.MouseEvent, courtId: string | number) => {
+    e.stopPropagation(); // Prevent card click
+
+    const user = getStoredUser();
+    if (!user || !user.token) {
+      checkLoginAndRedirect(navigate, () => {});
+      return;
+    }
+
+    const isFavorite = favorites.has(courtId);
+    setTogglingFavorite((prev) => new Set(prev).add(courtId));
+
+    try {
+      if (isFavorite) {
+        await removeFavorite(courtId);
+        setFavorites((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(courtId);
+          return newSet;
+        });
+        notifications.show({
+          title: 'Đã xóa',
+          message: 'Đã xóa khỏi danh sách yêu thích',
+          color: 'gray',
+        });
+      } else {
+        await addFavorite(courtId);
+        // Thêm vào state ngay lập tức (optimistic update)
+        setFavorites((prev) => new Set(prev).add(courtId));
+        notifications.show({
+          title: 'Đã thêm',
+          message: 'Đã thêm vào danh sách yêu thích',
+          color: 'pink',
+        });
+
+        // Verify lại sau 500ms để đảm bảo sync với DB (không block UI)
+        setTimeout(async () => {
+          try {
+            const verified = await checkFavorite(courtId);
+            if (!verified) {
+              // Nếu verify fail, xóa khỏi state
+              setFavorites((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(courtId);
+                return newSet;
+              });
+              notifications.show({
+                title: 'Lỗi',
+                message: 'Không thể xác nhận yêu thích',
+                color: 'red',
+              });
+            }
+          } catch (err) {
+            // Ignore verification error
+          }
+        }, 500);
+      }
+    } catch (err: any) {
+      // Nếu có lỗi, reload lại favorite status để đảm bảo sync với DB
+      if (user && user.token) {
+        try {
+          const verified = await checkFavorite(courtId);
+          setFavorites((prev) => {
+            const newSet = new Set(prev);
+            if (verified) {
+              newSet.add(courtId);
+            } else {
+              newSet.delete(courtId);
+            }
+            return newSet;
+          });
+        } catch {
+          // Ignore verification error
+        }
+      }
+
+      notifications.show({
+        title: 'Lỗi',
+        message: err?.response?.data?.message || 'Không thể cập nhật yêu thích',
+        color: 'red',
+      });
+    } finally {
+      setTogglingFavorite((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(courtId);
+        return newSet;
+      });
+    }
+  };
+
   return (
     <Container size="xl" pb={20}>
       <Stack gap="xs" mb="md">
@@ -197,8 +350,28 @@ const NearbyCourts: React.FC = () => {
                 style={{ cursor: 'pointer' }}
                 onClick={() => handleSelectCourt(court)}
               >
-                <Card.Section>
+                <Card.Section style={{ position: 'relative' }}>
                   <Image src={coverImage} height={170} alt={court.name} />
+                  <ActionIcon
+                    variant="filled"
+                    color={favorites.has(court._id) ? 'red' : 'gray'}
+                    size="lg"
+                    radius="xl"
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      zIndex: 10,
+                    }}
+                    loading={togglingFavorite.has(court._id)}
+                    onClick={(e) => handleToggleFavorite(e, court._id)}
+                  >
+                    {favorites.has(court._id) ? (
+                      <IconHeartFilled size={20} />
+                    ) : (
+                      <IconHeart size={20} />
+                    )}
+                  </ActionIcon>
                 </Card.Section>
 
                 <Stack gap="xs" mt="sm">
@@ -294,9 +467,50 @@ const NearbyCourts: React.FC = () => {
               </Tabs.Panel>
 
               <Tabs.Panel value="services" pt="md">
-                <Alert color="blue" title="Đang cập nhật">
-                  Thông tin dịch vụ sẽ được cập nhật trong thời gian tới.
-                </Alert>
+                {loadingPrices ? (
+                  <Group justify="center" py="lg">
+                    <Loader size="sm" />
+                  </Group>
+                ) : courtPrices.length === 0 ? (
+                  <Alert color="gray">Sân chưa có thông tin giá và khung giờ.</Alert>
+                ) : (
+                  <Stack gap="md">
+                    <Text fw={600} size="lg">
+                      Bảng giá theo khung giờ
+                    </Text>
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                      {['WEEKDAY', 'WEEKEND'].map((dayType) => {
+                        const pricesForDay = courtPrices.filter((p) => p.dayType === dayType);
+                        if (pricesForDay.length === 0) return null;
+
+                        return (
+                          <Card key={dayType} withBorder radius="md" padding="md">
+                            <Text fw={600} mb="sm" c={dayType === 'WEEKEND' ? 'red' : 'blue'}>
+                              {dayType === 'WEEKDAY' ? 'Ngày thường' : 'Cuối tuần'}
+                            </Text>
+                            <Stack gap="xs">
+                              {pricesForDay.map((price) => (
+                                <Group
+                                  key={price.id}
+                                  justify="space-between"
+                                  p="xs"
+                                  style={{ backgroundColor: '#f8f9fa', borderRadius: 4 }}
+                                >
+                                  <Text size="sm">
+                                    {price.startTime} - {price.endTime}
+                                  </Text>
+                                  <Text size="sm" fw={600} c="green">
+                                    {Number(price.price).toLocaleString('vi-VN')} đ
+                                  </Text>
+                                </Group>
+                              ))}
+                            </Stack>
+                          </Card>
+                        );
+                      })}
+                    </SimpleGrid>
+                  </Stack>
+                )}
               </Tabs.Panel>
 
               <Tabs.Panel value="images" pt="md">

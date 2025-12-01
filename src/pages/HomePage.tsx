@@ -7,6 +7,7 @@ import NearbyCourts from '../components/NearbyCourts';
 import Footer from '../components/Footer';
 import '../index.css';
 import BookingHistoryModal from '@/components/BookingHistoryModal';
+import { Space } from '@mantine/core';
 
 const HomePage: React.FC = () => {
   return (
@@ -24,6 +25,7 @@ const HomePage: React.FC = () => {
       <div style={{ marginTop: '2rem' }}>
         <NearbyCourts />
       </div>
+      <Space h={50} />
       <Footer />
     </>
   );
