@@ -14,6 +14,7 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { IconChevronLeft, IconChevronRight, IconCalendar } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import dayjs from 'dayjs';
 import { generateTimeSlots, isPastSlot } from '../utils/common';
 import { useNavigate } from 'react-router-dom';
@@ -191,14 +192,22 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ courtGroup
 
   const handleBookingClick = async () => {
     if (selectedSlots.length === 0 || !valueDate) {
-      alert('Vui lòng chọn khung giờ!');
+      notifications.show({
+        title: 'Thiếu thông tin',
+        message: 'Vui lòng chọn khung giờ!',
+        color: 'yellow',
+      });
       return;
     }
 
     // 1. Kiểm tra tất cả slot phải cùng 1 sân
     const uniqueCourts = new Set(selectedSlots.map((s) => s.court_id));
     if (uniqueCourts.size > 1) {
-      alert('Bạn chỉ được phép đặt nhiều khung giờ trên cùng một sân!');
+      notifications.show({
+        title: 'Lỗi',
+        message: 'Bạn chỉ được phép đặt nhiều khung giờ trên cùng một sân!',
+        color: 'red',
+      });
       return;
     }
 
@@ -207,29 +216,52 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ courtGroup
 
     for (let i = 0; i < sortedSlots.length - 1; i++) {
       if (sortedSlots[i].end_time !== sortedSlots[i + 1].start_time) {
-        alert('Các khung giờ phải liền kề nhau (ví dụ: 15:00–15:30, 15:30–16:00)');
+        notifications.show({
+          title: 'Lỗi',
+          message: 'Các khung giờ phải liền kề nhau (ví dụ: 15:00–15:30, 15:30–16:00)',
+          color: 'red',
+        });
         return;
       }
     }
 
-    // 3. Lấy thông tin cần thiết
-    const courtId = selectedSlots[0].court_id;
-    const bookingDate = dayjs(valueDate).format('YYYY-MM-DD');
+    // 3. Kiểm tra user đã đăng nhập chưa
     const storedUser = localStorage.getItem('user');
-    var userId;
-    if (storedUser) {
-      userId = JSON.parse(storedUser).id;
+    if (!storedUser) {
+      notifications.show({
+        title: 'Yêu cầu đăng nhập',
+        message: 'Vui lòng đăng nhập để đặt sân',
+        color: 'yellow',
+      });
+      navigate('/login');
+      return;
     }
 
-    // 4. Gộp các khung giờ liền nhau thành các block (vd: 14:00–16:00 thay vì 4 slot 30 phút)
+    const userData = JSON.parse(storedUser);
+    const userId = userData?.id;
+    if (!userId) {
+      notifications.show({
+        title: 'Lỗi',
+        message: 'Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại',
+        color: 'red',
+      });
+      navigate('/login');
+      return;
+    }
+
+    // 4. Lấy thông tin cần thiết
+    const courtId = selectedSlots[0].court_id;
+    const bookingDate = dayjs(valueDate).format('YYYY-MM-DD');
+
+    // 5. Gộp các khung giờ liền nhau thành các block (vd: 14:00–16:00 thay vì 4 slot 30 phút)
     const mergedSlots = mergeTimeSlots(
       sortedSlots.map((s) => ({ start_time: s.start_time, end_time: s.end_time }))
     );
 
-    // 5. Tính tổng tiền (dùng hàm calculateTotal đã có)
+    // 6. Tính tổng tiền (dùng hàm calculateTotal đã có)
     const totalPrice = calculateTotal(selectedSlots, bookingCourts || []);
 
-    // 6. Tìm tên sân để hiển thị
+    // 7. Tìm tên sân để hiển thị
     const selectedCourt = bookingCourts?.find((c: any) => c.id === courtId);
     const courtName = selectedCourt?.name || 'Sân không xác định';
 
@@ -264,21 +296,26 @@ export const CourtBookingTable: React.FC<CourtBookingTableProps> = ({ courtGroup
       setLoading(true);
       const apiResult = await getBookingConfirmation(confirmationData);
 
-      // Tạo paymentData mới với booking_id từ API response
+      // Tạo paymentData mới với booking_id và created_at từ API response
       const paymentData = {
         ...confirmationData,
         booking_id: apiResult.booking_id,
+        created_at: apiResult.created_at || new Date().toISOString(), // Lưu created_at để tính timeout chính xác
       };
 
       console.log('Payment data with booking_id:', paymentData);
 
-      // Navigate với paymentData mới (có booking_id)
+      // Navigate với paymentData mới (có booking_id và created_at)
       navigate(`/payment`, {
         state: paymentData,
       });
     } catch (error) {
       console.error('Lỗi khi xác nhận đặt sân:', error);
-      alert('Có lỗi xảy ra khi đặt sân. Vui lòng thử lại!');
+      notifications.show({
+        title: 'Lỗi',
+        message: 'Có lỗi xảy ra khi đặt sân. Vui lòng thử lại!',
+        color: 'red',
+      });
     } finally {
       setLoading(false);
     }

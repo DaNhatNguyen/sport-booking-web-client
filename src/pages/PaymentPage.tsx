@@ -102,6 +102,7 @@ const PaymentPage: React.FC = () => {
   useEffect(() => {
     const fetchPaymentInfo = async () => {
       if (!bookingData?.booking_id) {
+        console.error('PaymentPage - Missing booking_id:', bookingData);
         notifications.show({
           title: 'Lỗi',
           message: 'Không tìm thấy thông tin đặt sân',
@@ -111,14 +112,35 @@ const PaymentPage: React.FC = () => {
         return;
       }
 
+      console.log('PaymentPage - bookingData:', bookingData);
+      console.log('PaymentPage - booking_id:', bookingData.booking_id);
+
       try {
         setLoading(true);
         const data = await getPaymentInfo(bookingData.booking_id);
 
-        // Kiểm tra xem booking đã hết hạn chưa (trường hợp user thoát rồi quay lại)
-        const bookingCreatedAt = new Date(data.createdAt || bookingData.created_at);
+        // Xử lý created_at an toàn hơn với fallback
+        let bookingCreatedAt: Date;
+        if (data.createdAt) {
+          bookingCreatedAt = new Date(data.createdAt);
+        } else if (bookingData.created_at) {
+          bookingCreatedAt = new Date(bookingData.created_at);
+        } else {
+          // Fallback: Dùng thời gian hiện tại (không lý tưởng nhưng tránh crash)
+          console.warn('PaymentPage - Không tìm thấy created_at, dùng thời gian hiện tại');
+          bookingCreatedAt = new Date();
+        }
+
+        // Validate Date
+        if (isNaN(bookingCreatedAt.getTime())) {
+          console.error('PaymentPage - Invalid date:', data.createdAt, bookingData.created_at);
+          bookingCreatedAt = new Date(); // Fallback
+        }
+
         const now = new Date();
         const elapsedSeconds = Math.floor((now.getTime() - bookingCreatedAt.getTime()) / 1000);
+
+        console.log('PaymentPage - Elapsed seconds:', elapsedSeconds);
 
         if (elapsedSeconds >= PAYMENT_TIMEOUT) {
           // Booking đã hết hạn
