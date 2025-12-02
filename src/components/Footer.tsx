@@ -38,7 +38,7 @@ const Footer: React.FC = () => {
           {/* Company Info */}
           <Grid.Col span={{ base: 12, md: 4 }}>
             <Stack gap="md">
-              <Image src={logo} alt="Nport" height={40} fit="contain" style={{ maxWidth: 150 }} />
+              <Image src={logo} alt="NSport" height={40} fit="contain" style={{ maxWidth: 150 }} />
               <Stack gap="xs">
                 <Group gap="xs">
                   <IconMapPin size={18} color="#fff" />
@@ -231,9 +231,16 @@ const Footer: React.FC = () => {
       {/* Footer Bottom */}
       <Container size="xl" py="md">
         <Text size="sm" ta="center" c="gray.2">
-          Copyright © 2025 – <Text span c="red" fw={600} inherit>Nport</Text>. All rights reserved.
+          Copyright © 2025 –{' '}
+          <Text span c="red" fw={600} inherit>
+            NSport
+          </Text>
+          . All rights reserved.
           <br />
-          Designed by <Text span c="red" fw={600} inherit>DaNhatNguyen</Text>
+          Designed by{' '}
+          <Text span c="red" fw={600} inherit>
+            DaNhatNguyen
+          </Text>
         </Text>
       </Container>
     </Box>

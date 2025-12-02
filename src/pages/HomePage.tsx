@@ -8,6 +8,7 @@ import Footer from '../components/Footer';
 import '../index.css';
 import BookingHistoryModal from '@/components/BookingHistoryModal';
 import { Space } from '@mantine/core';
+import ChatbotWidget from '../components/ChatbotWidget';
 
 const HomePage: React.FC = () => {
   return (
@@ -26,6 +27,7 @@ const HomePage: React.FC = () => {
         <NearbyCourts />
       </div>
       <Space h={50} />
+      <ChatbotWidget />
       <Footer />
     </>
   );

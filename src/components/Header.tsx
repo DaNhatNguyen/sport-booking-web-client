@@ -204,7 +204,11 @@ const Header: React.FC = () => {
                 <Button component={Link} to="/login" variant="default" radius="md">
                   Đăng nhập
                 </Button>
-                <Button component={Link} to="/signup" radius="md">
+                <Button
+                  radius="md"
+                  color="green"
+                  component={Link} to="/signup"
+                >
                   Đăng ký
                 </Button>
               </Group>
